@@ -19,6 +19,15 @@ export default function PortfolioDetails() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
+  const [assets, setAssets] = useState([]);
+const [assetForm, setAssetForm] = useState({
+  name: "",
+  symbol: "",
+  assetType: "stock",
+  currentPrice: "",
+});
+const [addingAsset, setAddingAsset] = useState(false);
+
   const fetchPortfolio = async () => {
     try {
       const res = await API.get(`/portfolios/${id}`);
@@ -36,9 +45,19 @@ export default function PortfolioDetails() {
     }
   };
 
+  const fetchAssets = async () => {
+  try {
+    const res = await API.get(`/portfolios/${id}/assets`);
+    setAssets(res.data.assets);
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to load assets.");
+  }
+};
+
   useEffect(() => {
-    fetchPortfolio();
-  }, [id]);
+  fetchPortfolio();
+  fetchAssets();
+}, [id]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -81,6 +100,70 @@ export default function PortfolioDetails() {
       setDeleting(false);
     }
   };
+
+  const handleAssetChange = (e) => {
+  setAssetForm((prev) => ({
+    ...prev,
+    [e.target.name]: e.target.value,
+  }));
+};
+
+const addAsset = async (e) => {
+  e.preventDefault();
+  setAddingAsset(true);
+  setError("");
+
+  try {
+    const res = await API.post(`/portfolios/${id}/assets`, {
+      ...assetForm,
+      currentPrice: Number(assetForm.currentPrice),
+    });
+
+    setAssets((prev) => [res.data.asset, ...prev]);
+
+    setAssetForm({
+      name: "",
+      symbol: "",
+      assetType: "stock",
+      currentPrice: "",
+    });
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to add asset.");
+  } finally {
+    setAddingAsset(false);
+  }
+};
+
+const updateAssetPrice = async (assetId) => {
+  const price = prompt("Enter new current price:");
+
+  if (!price) return;
+
+  try {
+    const res = await API.patch(`/assets/${assetId}/price`, {
+      currentPrice: Number(price),
+    });
+
+    setAssets((prev) =>
+      prev.map((asset) => (asset._id === assetId ? res.data.asset : asset))
+    );
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to update asset price.");
+  }
+};
+
+const deleteAsset = async (assetId) => {
+  const confirmed = window.confirm("Delete this asset?");
+  if (!confirmed) return;
+
+  try {
+    await API.delete(`/assets/${assetId}`);
+
+    setAssets((prev) => prev.filter((asset) => asset._id !== assetId));
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to delete asset.");
+  }
+};
 
   if (loading) return <p>Loading portfolio...</p>;
   if (error && !portfolio) return <p className="text-red-400">{error}</p>;
@@ -149,6 +232,126 @@ export default function PortfolioDetails() {
           {saving ? "Saving..." : "Save changes"}
         </button>
       </form>
+
+      <section className="mt-10">
+  <h2 className="text-xl font-bold">Assets</h2>
+  <p className="text-slate-400 mt-1">
+    Add assets under this portfolio. Quantity changes only through transactions.
+  </p>
+
+  <form
+    onSubmit={addAsset}
+    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-5 grid gap-4"
+  >
+    <div className="grid md:grid-cols-2 gap-4">
+      <input
+        name="name"
+        value={assetForm.name}
+        onChange={handleAssetChange}
+        placeholder="Asset name"
+        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+      />
+
+      <input
+        name="symbol"
+        value={assetForm.symbol}
+        onChange={handleAssetChange}
+        placeholder="Symbol e.g. FSDH-FUND"
+        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+      />
+    </div>
+
+    <div className="grid md:grid-cols-2 gap-4">
+      <select
+        name="assetType"
+        value={assetForm.assetType}
+        onChange={handleAssetChange}
+        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+      >
+        <option value="stock">Stock</option>
+        <option value="bond">Bond</option>
+        <option value="mutual_fund">Mutual fund</option>
+        <option value="fixed_income">Fixed income</option>
+        <option value="cash">Cash</option>
+      </select>
+
+      <input
+        name="currentPrice"
+        type="number"
+        value={assetForm.currentPrice}
+        onChange={handleAssetChange}
+        placeholder="Current price"
+        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+      />
+    </div>
+
+    <button
+      disabled={addingAsset}
+      className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 text-white rounded-lg py-3 font-semibold"
+    >
+      {addingAsset ? "Adding..." : "Add asset"}
+    </button>
+  </form>
+</section>
+
+<div className="mt-6 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+  <table className="w-full text-sm">
+    <thead className="bg-slate-950 text-slate-400">
+      <tr>
+        <th className="text-left p-4">Asset</th>
+        <th className="text-left p-4">Type</th>
+        <th className="text-left p-4">Qty</th>
+        <th className="text-left p-4">Avg Price</th>
+        <th className="text-left p-4">Current Price</th>
+        <th className="text-left p-4">Value</th>
+        <th className="text-left p-4">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {assets.map((asset) => (
+        <tr key={asset._id} className="border-t border-slate-800">
+          <td className="p-4">
+            <p className="font-medium">{asset.name}</p>
+            <p className="text-slate-500">{asset.symbol}</p>
+          </td>
+
+          <td className="p-4">{asset.assetType}</td>
+          <td className="p-4">{asset.quantity}</td>
+          <td className="p-4">₦{asset.averageBuyPrice.toLocaleString()}</td>
+          <td className="p-4">₦{asset.currentPrice.toLocaleString()}</td>
+          <td className="p-4">
+            ₦{(asset.quantity * asset.currentPrice).toLocaleString()}
+          </td>
+
+          <td className="p-4 flex gap-2">
+            <button
+              onClick={() => updateAssetPrice(asset._id)}
+              className="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg"
+            >
+              Price
+            </button>
+
+            <button
+              onClick={() => deleteAsset(asset._id)}
+              className="bg-red-600 hover:bg-red-500 px-3 py-2 rounded-lg"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+
+      {assets.length === 0 && (
+        <tr>
+          <td colSpan="7" className="p-4 text-slate-400">
+            No assets yet. Add your first asset.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
 
       <button
         onClick={deletePortfolio}
