@@ -56,6 +56,20 @@ export const buyAsset = async (req, res) => {
     const newQuantity = oldQuantity + buyQuantity;
     const newTotalInvested = oldTotalInvested + totalAmount;
 
+    if (!Number.isFinite(buyQuantity) || !Number.isFinite(buyPrice)) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity and price must be valid numbers.",
+      });
+    }
+
+    if (buyQuantity > 100000000 || buyPrice > 1000000000) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity or price is too large.",
+      });
+    }
+
     asset.quantity = newQuantity;
     asset.totalInvested = newTotalInvested;
     asset.averageBuyPrice = newTotalInvested / newQuantity;
@@ -76,16 +90,16 @@ export const buyAsset = async (req, res) => {
     });
 
     await createAuditLog({
-  user: req.user._id,
-  action: "BUY_TRANSACTION_CREATED",
-  entityType: "transaction",
-  entityId: transaction._id,
-  newValue: {
-    transaction,
-    updatedAsset: asset,
-  },
-  ipAddress: req.ip,
-});
+      user: req.user._id,
+      action: "BUY_TRANSACTION_CREATED",
+      entityType: "transaction",
+      entityId: transaction._id,
+      newValue: {
+        transaction,
+        updatedAsset: asset,
+      },
+      ipAddress: req.ip,
+    });
 
     res.status(201).json({
       success: true,
@@ -159,6 +173,20 @@ export const sellAsset = async (req, res) => {
 
     const costBasisSold = asset.averageBuyPrice * sellQuantity;
 
+    if (!Number.isFinite(sellQuantity) || !Number.isFinite(sellPrice)) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity and price must be valid numbers.",
+      });
+    }
+
+    if (sellQuantity > 100000000 || sellPrice > 1000000000) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity or price is too large.",
+      });
+    }
+
     asset.quantity = asset.quantity - sellQuantity;
     asset.totalInvested = asset.totalInvested - costBasisSold;
 
@@ -184,16 +212,16 @@ export const sellAsset = async (req, res) => {
     });
 
     await createAuditLog({
-  user: req.user._id,
-  action: "SELL_TRANSACTION_CREATED",
-  entityType: "transaction",
-  entityId: transaction._id,
-  newValue: {
-    transaction,
-    updatedAsset: asset,
-  },
-  ipAddress: req.ip,
-});
+      user: req.user._id,
+      action: "SELL_TRANSACTION_CREATED",
+      entityType: "transaction",
+      entityId: transaction._id,
+      newValue: {
+        transaction,
+        updatedAsset: asset,
+      },
+      ipAddress: req.ip,
+    });
 
     res.status(201).json({
       success: true,
@@ -212,6 +240,12 @@ export const sellAsset = async (req, res) => {
 
 export const getPortfolioTransactions = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid portfolio ID.",
+      });
+    }
     const { portfolioId } = req.params;
 
     const portfolio = await Portfolio.findOne({

@@ -53,9 +53,7 @@ export const getAuditLogs = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find()
-      .select("-password")
-      .sort({ createdAt: -1 });
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -73,6 +71,12 @@ export const getAllUsers = async (req, res) => {
 
 export const updateUserStatus = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID.",
+      });
+    }
     const { isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
@@ -91,12 +95,19 @@ export const updateUserStatus = async (req, res) => {
       });
     }
 
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot disable your own admin account.",
+      });
+    }
+
     if (user.role === "admin") {
-  return res.status(400).json({
-    success: false,
-    message: "Admin accounts cannot be disabled.",
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Admin accounts cannot be disabled.",
+      });
+    }
 
     const oldValue = {
       isActive: user.isActive,

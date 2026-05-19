@@ -1,9 +1,18 @@
 import Asset from "../models/assetModel.js";
 import Portfolio from "../models/portfolioModel.js";
+import Transaction from "../models/transactionModel.js";
 import { createAuditLog } from "../utils/auditLogger.js";
+import { isValidObjectId } from "../utils/validateObjectId.js";
 
 export const addAssetToPortfolio = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid portfolio ID.",
+      });
+    }
+
     const { portfolioId } = req.params;
     const { name, symbol, assetType, currentPrice } = req.body;
 
@@ -56,13 +65,13 @@ export const addAssetToPortfolio = async (req, res) => {
     });
 
     await createAuditLog({
-  user: req.user._id,
-  action: "ASSET_ADDED",
-  entityType: "asset",
-  entityId: asset._id,
-  newValue: asset,
-  ipAddress: req.ip,
-});
+      user: req.user._id,
+      action: "ASSET_ADDED",
+      entityType: "asset",
+      entityId: asset._id,
+      newValue: asset,
+      ipAddress: req.ip,
+    });
 
     res.status(201).json({
       success: true,
@@ -80,6 +89,13 @@ export const addAssetToPortfolio = async (req, res) => {
 
 export const getPortfolioAssets = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid portfolio ID.",
+      });
+    }
+
     const { portfolioId } = req.params;
 
     const portfolio = await Portfolio.findOne({
@@ -115,6 +131,12 @@ export const getPortfolioAssets = async (req, res) => {
 
 export const updateAssetPrice = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid asset ID.",
+      });
+    }
     const { assetId } = req.params;
     const { currentPrice } = req.body;
 
@@ -138,24 +160,24 @@ export const updateAssetPrice = async (req, res) => {
     }
 
     const oldValue = {
-  currentPrice: asset.currentPrice,
-};
+      currentPrice: asset.currentPrice,
+    };
 
     asset.currentPrice = Number(currentPrice);
 
     const updatedAsset = await asset.save();
 
     await createAuditLog({
-  user: req.user._id,
-  action: "ASSET_PRICE_UPDATED",
-  entityType: "asset",
-  entityId: asset._id,
-  oldValue,
-  newValue: {
-    currentPrice: updatedAsset.currentPrice,
-  },
-  ipAddress: req.ip,
-});
+      user: req.user._id,
+      action: "ASSET_PRICE_UPDATED",
+      entityType: "asset",
+      entityId: asset._id,
+      oldValue,
+      newValue: {
+        currentPrice: updatedAsset.currentPrice,
+      },
+      ipAddress: req.ip,
+    });
 
     res.status(200).json({
       success: true,
@@ -173,6 +195,13 @@ export const updateAssetPrice = async (req, res) => {
 
 export const deleteAsset = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid asset ID.",
+      });
+    }
+    
     const { assetId } = req.params;
 
     const asset = await Asset.findOne({
@@ -195,18 +224,31 @@ export const deleteAsset = async (req, res) => {
       });
     }
 
+    const transactionCount = await Transaction.countDocuments({
+      asset: asset._id,
+      user: req.user._id,
+    });
+
+    if (transactionCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You cannot delete an asset with transaction history. Mark it as closed instead.",
+      });
+    }
+
     const oldValue = asset.toObject();
 
     await asset.deleteOne();
 
     await createAuditLog({
-  user: req.user._id,
-  action: "ASSET_DELETED",
-  entityType: "asset",
-  entityId: asset._id,
-  oldValue,
-  ipAddress: req.ip,
-});
+      user: req.user._id,
+      action: "ASSET_DELETED",
+      entityType: "asset",
+      entityId: asset._id,
+      oldValue,
+      ipAddress: req.ip,
+    });
 
     res.status(200).json({
       success: true,
