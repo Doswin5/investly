@@ -8,6 +8,7 @@ import portfolioRoutes from "./routes/portfolioRoutes.js";
 import assetRoutes from "./routes/assetRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/api/portfolios", portfolioRoutes);
 app.use("/api", assetRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 const PORT = process.env.PORT || 5050;
 
