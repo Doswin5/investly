@@ -91,6 +91,13 @@ export const updateUserStatus = async (req, res) => {
       });
     }
 
+    if (user.role === "admin") {
+  return res.status(400).json({
+    success: false,
+    message: "Admin accounts cannot be disabled.",
+  });
+}
+
     const oldValue = {
       isActive: user.isActive,
     };
