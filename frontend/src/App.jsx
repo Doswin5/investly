@@ -7,6 +7,7 @@ import PortfolioDetails from "./pages/PortfolioDetails";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import AppLayout from "./components/AppLayout";
 
 export default function App() {
   return (
@@ -18,40 +19,48 @@ export default function App() {
         <Route path="/register" element={<Register />} />
 
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <AppLayout>
+        <Dashboard />
+      </AppLayout>
+    </ProtectedRoute>
+  }
+/>
 
-        <Route
-          path="/portfolios"
-          element={
-            <ProtectedRoute>
-              <Portfolios />
-            </ProtectedRoute>
-          }
-        />
+<Route
+  path="/portfolios"
+  element={
+    <ProtectedRoute>
+      <AppLayout>
+        <Portfolios />
+      </AppLayout>
+    </ProtectedRoute>
+  }
+/>
 
-        <Route
-          path="/portfolios/:id"
-          element={
-            <ProtectedRoute>
-              <PortfolioDetails />
-            </ProtectedRoute>
-          }
-        />
+<Route
+  path="/portfolios/:id"
+  element={
+    <ProtectedRoute>
+      <AppLayout>
+        <PortfolioDetails />
+      </AppLayout>
+    </ProtectedRoute>
+  }
+/>
 
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
+<Route
+  path="/admin"
+  element={
+    <AdminRoute>
+      <AppLayout>
+        <AdminDashboard />
+      </AppLayout>
+    </AdminRoute>
+  }
+/>
       </Routes>
     </BrowserRouter>
   );
