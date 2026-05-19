@@ -1,5 +1,6 @@
 import Asset from "../models/assetModel.js";
 import Portfolio from "../models/portfolioModel.js";
+import { createAuditLog } from "../utils/auditLogger.js";
 
 export const addAssetToPortfolio = async (req, res) => {
   try {
@@ -53,6 +54,15 @@ export const addAssetToPortfolio = async (req, res) => {
       assetType,
       currentPrice: currentPrice || 0,
     });
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "ASSET_ADDED",
+  entityType: "asset",
+  entityId: asset._id,
+  newValue: asset,
+  ipAddress: req.ip,
+});
 
     res.status(201).json({
       success: true,
@@ -127,9 +137,25 @@ export const updateAssetPrice = async (req, res) => {
       });
     }
 
+    const oldValue = {
+  currentPrice: asset.currentPrice,
+};
+
     asset.currentPrice = Number(currentPrice);
 
     const updatedAsset = await asset.save();
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "ASSET_PRICE_UPDATED",
+  entityType: "asset",
+  entityId: asset._id,
+  oldValue,
+  newValue: {
+    currentPrice: updatedAsset.currentPrice,
+  },
+  ipAddress: req.ip,
+});
 
     res.status(200).json({
       success: true,
@@ -169,7 +195,18 @@ export const deleteAsset = async (req, res) => {
       });
     }
 
+    const oldValue = asset.toObject();
+
     await asset.deleteOne();
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "ASSET_DELETED",
+  entityType: "asset",
+  entityId: asset._id,
+  oldValue,
+  ipAddress: req.ip,
+});
 
     res.status(200).json({
       success: true,

@@ -1,6 +1,7 @@
 import Asset from "../models/assetModel.js";
 import Portfolio from "../models/portfolioModel.js";
 import Transaction from "../models/transactionModel.js";
+import { createAuditLog } from "../utils/auditLogger.js";
 
 export const buyAsset = async (req, res) => {
   try {
@@ -73,6 +74,18 @@ export const buyAsset = async (req, res) => {
       totalAmount,
       note,
     });
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "BUY_TRANSACTION_CREATED",
+  entityType: "transaction",
+  entityId: transaction._id,
+  newValue: {
+    transaction,
+    updatedAsset: asset,
+  },
+  ipAddress: req.ip,
+});
 
     res.status(201).json({
       success: true,
@@ -169,6 +182,18 @@ export const sellAsset = async (req, res) => {
       totalAmount,
       note,
     });
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "SELL_TRANSACTION_CREATED",
+  entityType: "transaction",
+  entityId: transaction._id,
+  newValue: {
+    transaction,
+    updatedAsset: asset,
+  },
+  ipAddress: req.ip,
+});
 
     res.status(201).json({
       success: true,

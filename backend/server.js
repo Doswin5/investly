@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import assetRoutes from "./routes/assetRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/portfolios", portfolioRoutes);
 app.use("/api", assetRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5050;
 

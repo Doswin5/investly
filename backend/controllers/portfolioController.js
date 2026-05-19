@@ -1,4 +1,5 @@
 import Portfolio from "../models/portfolioModel.js";
+import { createAuditLog } from "../utils/auditLogger.js";
 
 export const createPortfolio = async (req, res) => {
   try {
@@ -18,6 +19,15 @@ export const createPortfolio = async (req, res) => {
       riskLevel,
       baseCurrency,
     });
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "PORTFOLIO_CREATED",
+  entityType: "portfolio",
+  entityId: portfolio._id,
+  newValue: portfolio,
+  ipAddress: req.ip,
+});
 
     res.status(201).json({
       success: true,
@@ -96,12 +106,29 @@ export const updatePortfolio = async (req, res) => {
       });
     }
 
+    const oldValue = {
+  name: portfolio.name,
+  description: portfolio.description,
+  riskLevel: portfolio.riskLevel,
+  baseCurrency: portfolio.baseCurrency,
+};
+
     if (name !== undefined) portfolio.name = name;
     if (description !== undefined) portfolio.description = description;
     if (riskLevel !== undefined) portfolio.riskLevel = riskLevel;
     if (baseCurrency !== undefined) portfolio.baseCurrency = baseCurrency;
 
     const updatedPortfolio = await portfolio.save();
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "PORTFOLIO_UPDATED",
+  entityType: "portfolio",
+  entityId: portfolio._id,
+  oldValue,
+  newValue: updatedPortfolio,
+  ipAddress: req.ip,
+});
 
     res.status(200).json({
       success: true,
@@ -131,7 +158,18 @@ export const deletePortfolio = async (req, res) => {
       });
     }
 
+    const oldValue = portfolio.toObject();
+
     await portfolio.deleteOne();
+
+    await createAuditLog({
+  user: req.user._id,
+  action: "PORTFOLIO_DELETED",
+  entityType: "portfolio",
+  entityId: portfolio._id,
+  oldValue,
+  ipAddress: req.ip,
+});
 
     res.status(200).json({
       success: true,
