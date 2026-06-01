@@ -7,6 +7,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import API from "../api/axiosInstance";
+import { formatCurrency } from "../utils/formatCurrency";
+import SummaryCard from "../components/SummaryCard";
 
 export default function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
@@ -33,6 +35,13 @@ export default function Dashboard() {
 
   const allocationData = dashboard.assetAllocation || [];
 
+  const gainLossStatus =
+  dashboard.totalGainLoss > 0
+    ? "Profit"
+    : dashboard.totalGainLoss < 0
+    ? "Loss"
+    : "Neutral";
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -45,18 +54,19 @@ export default function Dashboard() {
         <SummaryCard title="Assets" value={dashboard.totalAssets} />
         <SummaryCard
           title="Invested"
-          value={`₦${dashboard.totalInvested.toLocaleString()}`}
+          value={formatCurrency(dashboard.totalInvested)}
         />
         <SummaryCard
           title="Current Value"
-          value={`₦${dashboard.totalPortfolioValue.toLocaleString()}`}
+          value={formatCurrency(dashboard.totalPortfolioValue)}
         />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4 mt-6">
         <SummaryCard
           title="Gain / Loss"
-          value={`₦${dashboard.totalGainLoss.toLocaleString()}`}
+          value={formatCurrency(dashboard.totalGainLoss)}
+          subtitle={gainLossStatus}
         />
         <SummaryCard
           title="Gain / Loss %"
@@ -91,7 +101,7 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `₦${Number(value).toLocaleString()}`}
+                    formatter={(value) => formatCurrency(value)}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -117,13 +127,13 @@ export default function Dashboard() {
                       {transaction.type} {transaction.asset?.symbol}
                     </p>
                     <p className="text-slate-400 text-sm">
-                      {transaction.quantity} units at ₦
-                      {transaction.price.toLocaleString()}
+                      {transaction.quantity} units at 
+                      {formatCurrency(transaction.price)}
                     </p>
                   </div>
 
                   <p className="font-semibold">
-                    ₦{transaction.totalAmount.toLocaleString()}
+                    {formatCurrency(transaction.totalAmount)}
                   </p>
                 </div>
               </div>
@@ -135,15 +145,6 @@ export default function Dashboard() {
           </div>
         </section>
       </div>
-    </div>
-  );
-}
-
-function SummaryCard({ title, value }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-      <p className="text-slate-400 text-sm">{title}</p>
-      <h2 className="text-2xl font-bold mt-2">{value}</h2>
     </div>
   );
 }

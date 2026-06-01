@@ -29,14 +29,14 @@ export default function PortfolioDetails() {
   const [addingAsset, setAddingAsset] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
-const [transactionForm, setTransactionForm] = useState({
-  assetId: "",
-  type: "buy",
-  quantity: "",
-  price: "",
-  note: "",
-});
-const [recordingTransaction, setRecordingTransaction] = useState(false);
+  const [transactionForm, setTransactionForm] = useState({
+    assetId: "",
+    type: "buy",
+    quantity: "",
+    price: "",
+    note: "",
+  });
+  const [recordingTransaction, setRecordingTransaction] = useState(false);
 
   const fetchPortfolio = async () => {
     try {
@@ -65,19 +65,19 @@ const [recordingTransaction, setRecordingTransaction] = useState(false);
   };
 
   const fetchTransactions = async () => {
-  try {
-    const res = await API.get(`/transactions/${id}`);
-    setTransactions(res.data.transactions);
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to load transactions.");
-  }
-};
+    try {
+      const res = await API.get(`/transactions/${id}`);
+      setTransactions(res.data.transactions);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load transactions.");
+    }
+  };
 
   useEffect(() => {
-  fetchPortfolio();
-  fetchAssets();
-  fetchTransactions();
-}, [id]);
+    fetchPortfolio();
+    fetchAssets();
+    fetchTransactions();
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -186,63 +186,66 @@ const [recordingTransaction, setRecordingTransaction] = useState(false);
   };
 
   const handleTransactionChange = (e) => {
-  setTransactionForm((prev) => ({
-    ...prev,
-    [e.target.name]: e.target.value,
-  }));
-};
+    setTransactionForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-const recordTransaction = async (e) => {
-  e.preventDefault();
-  setRecordingTransaction(true);
-  setError("");
+  const recordTransaction = async (e) => {
+    e.preventDefault();
+    setRecordingTransaction(true);
+    setError("");
 
-  if (
-  !transactionForm.assetId ||
-  !transactionForm.quantity ||
-  !transactionForm.price
-) {
-  setError("Asset, quantity, and price are required.");
-  setRecordingTransaction(false);
-  return;
-}
+    if (
+      !transactionForm.assetId ||
+      !transactionForm.quantity ||
+      !transactionForm.price
+    ) {
+      setError("Asset, quantity, and price are required.");
+      setRecordingTransaction(false);
+      return;
+    }
 
-if (Number(transactionForm.quantity) <= 0 || Number(transactionForm.price) <= 0) {
-  setError("Quantity and price must be greater than 0.");
-  setRecordingTransaction(false);
-  return;
-}
+    if (
+      Number(transactionForm.quantity) <= 0 ||
+      Number(transactionForm.price) <= 0
+    ) {
+      setError("Quantity and price must be greater than 0.");
+      setRecordingTransaction(false);
+      return;
+    }
 
-  try {
-    const endpoint =
-      transactionForm.type === "buy"
-        ? "/transactions/buy"
-        : "/transactions/sell";
+    try {
+      const endpoint =
+        transactionForm.type === "buy"
+          ? "/transactions/buy"
+          : "/transactions/sell";
 
-    await API.post(endpoint, {
-      portfolioId: id,
-      assetId: transactionForm.assetId,
-      quantity: Number(transactionForm.quantity),
-      price: Number(transactionForm.price),
-      note: transactionForm.note,
-    });
+      await API.post(endpoint, {
+        portfolioId: id,
+        assetId: transactionForm.assetId,
+        quantity: Number(transactionForm.quantity),
+        price: Number(transactionForm.price),
+        note: transactionForm.note,
+      });
 
-    setTransactionForm({
-      assetId: "",
-      type: "buy",
-      quantity: "",
-      price: "",
-      note: "",
-    });
+      setTransactionForm({
+        assetId: "",
+        type: "buy",
+        quantity: "",
+        price: "",
+        note: "",
+      });
 
-    await fetchAssets();
-    await fetchTransactions();
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to record transaction.");
-  } finally {
-    setRecordingTransaction(false);
-  }
-};
+      await fetchAssets();
+      await fetchTransactions();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to record transaction.");
+    } finally {
+      setRecordingTransaction(false);
+    }
+  };
 
   if (loading) return <p>Loading portfolio...</p>;
   if (error && !portfolio) return <p className="text-red-400">{error}</p>;
@@ -374,8 +377,8 @@ if (Number(transactionForm.quantity) <= 0 || Number(transactionForm.price) <= 0)
         </form>
       </section>
 
-      <div className="mt-6 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="mt-6 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[800px] text-sm">
           <thead className="bg-slate-950 text-slate-400">
             <tr>
               <th className="text-left p-4">Asset</th>
@@ -435,128 +438,132 @@ if (Number(transactionForm.quantity) <= 0 || Number(transactionForm.price) <= 0)
         </table>
       </div>
       <section className="mt-10">
-  <h2 className="text-xl font-bold">Record Transaction</h2>
-  <p className="text-slate-400 mt-1">
-    Buy and sell transactions update asset quantity automatically.
-  </p>
+        <h2 className="text-xl font-bold">Record Transaction</h2>
+        <p className="text-slate-400 mt-1">
+          Buy and sell transactions update asset quantity automatically.
+        </p>
 
-  <form
-    onSubmit={recordTransaction}
-    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-5 grid gap-4"
-  >
-    <div className="grid md:grid-cols-2 gap-4">
-      <select
-        name="assetId"
-        value={transactionForm.assetId}
-        onChange={handleTransactionChange}
-        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
-      >
-        <option value="">Select asset</option>
-        {assets.map((asset) => (
-          <option key={asset._id} value={asset._id}>
-            {asset.name} ({asset.symbol})
-          </option>
-        ))}
-      </select>
+        <form
+          onSubmit={recordTransaction}
+          className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-5 grid gap-4"
+        >
+          <div className="grid md:grid-cols-2 gap-4">
+            <select
+              name="assetId"
+              value={transactionForm.assetId}
+              onChange={handleTransactionChange}
+              className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+            >
+              <option value="">Select asset</option>
+              {assets.map((asset) => (
+                <option key={asset._id} value={asset._id}>
+                  {asset.name} ({asset.symbol})
+                </option>
+              ))}
+            </select>
 
-      <select
-        name="type"
-        value={transactionForm.type}
-        onChange={handleTransactionChange}
-        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
-      >
-        <option value="buy">Buy</option>
-        <option value="sell">Sell</option>
-      </select>
-    </div>
+            <select
+              name="type"
+              value={transactionForm.type}
+              onChange={handleTransactionChange}
+              className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+            >
+              <option value="buy">Buy</option>
+              <option value="sell">Sell</option>
+            </select>
+          </div>
 
-    <div className="grid md:grid-cols-2 gap-4">
-      <input
-        name="quantity"
-        type="number"
-        min="0"
-        step="0.0001"
-        value={transactionForm.quantity}
-        onChange={handleTransactionChange}
-        placeholder="Quantity"
-        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
-      />
+          <div className="grid md:grid-cols-2 gap-4">
+            <input
+              name="quantity"
+              type="number"
+              min="0"
+              step="0.0001"
+              value={transactionForm.quantity}
+              onChange={handleTransactionChange}
+              placeholder="Quantity"
+              className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+            />
 
-      <input
-        name="price"
-        type="number"
-        min="0"
-        step="0.01"
-        value={transactionForm.price}
-        onChange={handleTransactionChange}
-        placeholder="Price per unit"
-        className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
-      />
-    </div>
+            <input
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={transactionForm.price}
+              onChange={handleTransactionChange}
+              placeholder="Price per unit"
+              className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+            />
+          </div>
 
-    <textarea
-      name="note"
-      value={transactionForm.note}
-      onChange={handleTransactionChange}
-      placeholder="Optional note"
-      className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
-    />
+          <textarea
+            name="note"
+            value={transactionForm.note}
+            onChange={handleTransactionChange}
+            placeholder="Optional note"
+            className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-3"
+          />
 
-    <button
-      disabled={recordingTransaction}
-      className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 text-white rounded-lg py-3 font-semibold"
-    >
-      {recordingTransaction ? "Recording..." : "Record transaction"}
-    </button>
-  </form>
-</section>
+          <button
+            disabled={recordingTransaction}
+            className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 text-white rounded-lg py-3 font-semibold"
+          >
+            {recordingTransaction ? "Recording..." : "Record transaction"}
+          </button>
+        </form>
+      </section>
 
-<section className="mt-10">
-  <h2 className="text-xl font-bold">Transaction History</h2>
+      <section className="mt-10">
+        <h2 className="text-xl font-bold">Transaction History</h2>
 
-  <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-    <table className="w-full text-sm">
-      <thead className="bg-slate-950 text-slate-400">
-        <tr>
-          <th className="text-left p-4">Type</th>
-          <th className="text-left p-4">Asset</th>
-          <th className="text-left p-4">Quantity</th>
-          <th className="text-left p-4">Price</th>
-          <th className="text-left p-4">Total</th>
-          <th className="text-left p-4">Date</th>
-        </tr>
-      </thead>
+        <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
+          <table className="w-full min-w-[800px] text-sm">
+            <thead className="bg-slate-950 text-slate-400">
+              <tr>
+                <th className="text-left p-4">Type</th>
+                <th className="text-left p-4">Asset</th>
+                <th className="text-left p-4">Quantity</th>
+                <th className="text-left p-4">Price</th>
+                <th className="text-left p-4">Total</th>
+                <th className="text-left p-4">Date</th>
+              </tr>
+            </thead>
 
-      <tbody>
-        {transactions.map((transaction) => (
-          <tr key={transaction._id} className="border-t border-slate-800">
-            <td className="p-4 capitalize">{transaction.type}</td>
+            <tbody>
+              {transactions.map((transaction) => (
+                <tr key={transaction._id} className="border-t border-slate-800">
+                  <td className="p-4 capitalize">{transaction.type}</td>
 
-            <td className="p-4">
-              <p className="font-medium">{transaction.asset?.name}</p>
-              <p className="text-slate-500">{transaction.asset?.symbol}</p>
-            </td>
+                  <td className="p-4">
+                    <p className="font-medium">{transaction.asset?.name}</p>
+                    <p className="text-slate-500">
+                      {transaction.asset?.symbol}
+                    </p>
+                  </td>
 
-            <td className="p-4">{transaction.quantity}</td>
-            <td className="p-4">₦{transaction.price.toLocaleString()}</td>
-            <td className="p-4">₦{transaction.totalAmount.toLocaleString()}</td>
-            <td className="p-4">
-              {new Date(transaction.createdAt).toLocaleDateString()}
-            </td>
-          </tr>
-        ))}
+                  <td className="p-4">{transaction.quantity}</td>
+                  <td className="p-4">₦{transaction.price.toLocaleString()}</td>
+                  <td className="p-4">
+                    ₦{transaction.totalAmount.toLocaleString()}
+                  </td>
+                  <td className="p-4">
+                    {new Date(transaction.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
 
-        {transactions.length === 0 && (
-          <tr>
-            <td colSpan="6" className="p-4 text-slate-400">
-              No transactions yet.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-</section>
+              {transactions.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="p-4 text-slate-400">
+                    No transactions yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <button
         onClick={deletePortfolio}

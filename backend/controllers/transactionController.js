@@ -240,12 +240,6 @@ export const sellAsset = async (req, res) => {
 
 export const getPortfolioTransactions = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid portfolio ID.",
-      });
-    }
     const { portfolioId } = req.params;
 
     const portfolio = await Portfolio.findOne({

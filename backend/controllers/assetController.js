@@ -2,16 +2,11 @@ import Asset from "../models/assetModel.js";
 import Portfolio from "../models/portfolioModel.js";
 import Transaction from "../models/transactionModel.js";
 import { createAuditLog } from "../utils/auditLogger.js";
-import { isValidObjectId } from "../utils/validateObjectId.js";
+
 
 export const addAssetToPortfolio = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid portfolio ID.",
-      });
-    }
+
 
     const { portfolioId } = req.params;
     const { name, symbol, assetType, currentPrice } = req.body;
@@ -89,12 +84,7 @@ export const addAssetToPortfolio = async (req, res) => {
 
 export const getPortfolioAssets = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid portfolio ID.",
-      });
-    }
+
 
     const { portfolioId } = req.params;
 
@@ -131,12 +121,7 @@ export const getPortfolioAssets = async (req, res) => {
 
 export const updateAssetPrice = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid asset ID.",
-      });
-    }
+
     const { assetId } = req.params;
     const { currentPrice } = req.body;
 
@@ -195,13 +180,7 @@ export const updateAssetPrice = async (req, res) => {
 
 export const deleteAsset = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid asset ID.",
-      });
-    }
-    
+
     const { assetId } = req.params;
 
     const asset = await Asset.findOne({

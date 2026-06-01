@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/axiosInstance";
+import SummaryCard from "../components/SummaryCard";
 
 export default function AdminDashboard() {
   const [dashboard, setDashboard] = useState(null);
@@ -70,8 +71,8 @@ export default function AdminDashboard() {
       <section className="mt-10">
         <h2 className="text-xl font-bold">Users</h2>
 
-        <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
+          <table className="w-full min-w-[800px] text-sm">
             <thead className="bg-slate-950 text-slate-400">
               <tr>
                 <th className="text-left p-4">User</th>
@@ -128,8 +129,8 @@ export default function AdminDashboard() {
       <section className="mt-10">
         <h2 className="text-xl font-bold">Audit Logs</h2>
 
-        <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
+          <table className="w-full min-w-[800px] text-sm">
             <thead className="bg-slate-950 text-slate-400">
               <tr>
                 <th className="text-left p-4">Action</th>
@@ -168,15 +169,6 @@ export default function AdminDashboard() {
           </table>
         </div>
       </section>
-    </div>
-  );
-}
-
-function SummaryCard({ title, value }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-      <p className="text-slate-400 text-sm">{title}</p>
-      <h2 className="text-2xl font-bold mt-2">{value}</h2>
     </div>
   );
 }

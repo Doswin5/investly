@@ -2,7 +2,7 @@ import Portfolio from "../models/portfolioModel.js";
 import Asset from "../models/assetModel.js";
 import Transaction from "../models/transactionModel.js";
 import { createAuditLog } from "../utils/auditLogger.js";
-import { isValidObjectId } from "../utils/validateObjectId.js";
+
 
 export const createPortfolio = async (req, res) => {
   try {
@@ -68,12 +68,6 @@ export const getMyPortfolios = async (req, res) => {
 
 export const getPortfolioById = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid portfolio ID.",
-      });
-    }
     const portfolio = await Portfolio.findOne({
       _id: req.params.id,
       user: req.user._id,
@@ -161,12 +155,6 @@ export const updatePortfolio = async (req, res) => {
 
 export const deletePortfolio = async (req, res) => {
   try {
-    if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid portfolio ID.",
-      });
-    }
     const portfolio = await Portfolio.findOne({
       _id: req.params.id,
       user: req.user._id,
