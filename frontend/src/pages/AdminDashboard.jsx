@@ -72,7 +72,7 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-bold">Users</h2>
 
         <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
-          <table className="w-full min-w-[800px] text-sm">
+          <table className="w-full min-w-200 text-sm">
             <thead className="bg-slate-950 text-slate-400">
               <tr>
                 <th className="text-left p-4">User</th>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-bold">Audit Logs</h2>
 
         <div className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
-          <table className="w-full min-w-[800px] text-sm">
+          <table className="w-full min-w-200 text-sm">
             <thead className="bg-slate-950 text-slate-400">
               <tr>
                 <th className="text-left p-4">Action</th>
